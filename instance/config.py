@@ -1,0 +1,2 @@
+TOKEN = 'chemf'
+DEBUG = False
