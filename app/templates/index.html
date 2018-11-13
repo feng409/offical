@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="https://cdn.bootcss.com/element-ui/2.3.8/theme-chalk/index.css" rel="stylesheet">
+
+    <script src="https://cdn.bootcss.com/vue/2.5.16/vue.js"></script>
+    <script src="https://cdn.bootcss.com/element-ui/2.4.0/index.js"></script>
+    <script src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
+    <script src="https://cdn.bootcss.com/axios/0.18.0/axios.min.js"></script>
+    <style type="text/css">
+        .avatar-uploader-icon {
+            font-size: 28px;
+            color: #8c939d;
+            width: 178px;
+            height: 178px;
+            line-height: 178px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <el-form ref="form" :model="form" label-width="80px">
+        <el-form-item label="图片">
+            <el-upload
+                    name="file"
+                    class="avatar-uploader"
+                    action="http://offical.eoyohe.cn/image"
+                    :show-file-list="false"
+                    :on-success="handleAvatarSuccess">
+                <img v-if="form.imgUrl" :src="form.imgUrl" class="avatar avatar-uploader-icon">
+                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            </el-upload>
+        </el-form-item>
+        <el-form-item label="标题">
+          <el-input v-model="form.title"></el-input>
+        </el-form-item>
+        <el-form-item label="注释">
+            <el-input v-model="form.desc"></el-input>
+        </el-form-item>
+    </el-form>
+</div>
+</body>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            msg: 'hello world',
+            form: {
+                imgUrl: '',
+                title: '',
+                desc: ''
+            }
+        },
+        mounted: function () {
+            // 获取签名
+            axios.get('/signature')
+                .then(function (response) {
+                    wx.config({
+                        debug: true,
+                        appId: 'wx1cbb36e1fd2cc0aa',
+                        timestamp: parseInt(response.data.timestamp),
+                        nonceStr: response.data.noncestr,
+                        signature: response.data.signature,
+                        jsApiList: [
+                            'updateAppMessageShareData',
+                            'updateTimelineShareData'
+                        ]
+                    })
+                    //检查权限
+                    wx.ready(function () {
+                        wx.checkJsApi({
+                            jsApiList: [
+                                'updateAppMessageShareData',
+                                'updateTimelineShareData'
+                            ],
+                            success: function(res) {
+                            }
+                        });
+                    });
+                });
+            wx.updateAppMessageShareData({
+                title: this.title,
+                desc: this.desc,
+                link: 'http://offical.eoyohe.cn/forward',
+                imgUrl: this.imgUrl, // 分享图标
+                }, function(res) {
+                alert('分享成功')
+            });
+        },
+        methods: {
+            change() {
+                alert(this.msg)
+            },
+            handleAvatarSuccess(response, file) {
+                this.form.imgUrl = URL.createObjectURL(file.raw)
+            }
+        }
+    })
+</script>
+</html>
